@@ -2,9 +2,9 @@ from setuptools import setup
 
 setup(
     name='renderlib',
-    version='0.1.0',
+    version='0.1.2',
     packages=['renderlib'],
-    setup_requires=['cffi>=1.0.0'],
+    setup_requires=['cffi>=1.0.0', 'matlib>=0.1.5'],
     cffi_modules=['build.py:ffi'],
     install_requires=['cffi>=1.0.0', 'matlib>=0.1.5'],
 
