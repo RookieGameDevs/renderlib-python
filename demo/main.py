@@ -123,18 +123,18 @@ class Demo:
         SDL_Quit()
 
     def load_resources(self):
-        self.mesh = Mesh.from_file('demo/data/zombie.mesh')
+        self.mesh = Mesh.from_file('tests/data/zombie.mesh')
         self.animation = AnimationInstance(self.mesh.animations[0])
-        self.image = Image.from_file('demo/data/zombie.jpg')
+        self.image = Image.from_file('tests/data/zombie.jpg')
         self.texture = Texture.from_image(
             self.image, Texture.TextureType.texture_2d)
-        self.terrain_mesh = Mesh.from_file('demo/data/plane.mesh')
-        self.grass_img = Image.from_file('demo/data/grass.jpg')
+        self.terrain_mesh = Mesh.from_file('tests/data/plane.mesh')
+        self.grass_img = Image.from_file('tests/data/grass.jpg')
         self.terrain_texture = Texture.from_image(
             self.grass_img, Texture.TextureType.texture_2d)
-        self.font = Font.from_file('demo/data/courier.ttf', 16)
+        self.font = Font.from_file('tests/data/courier.ttf', 16)
         self.fps_text = Text(self.font)
-        self.close_btn_img = Image.from_file('demo/data/close_btn.png')
+        self.close_btn_img = Image.from_file('tests/data/close_btn.png')
         self.close_btn_texture = Texture.from_image(
             self.close_btn_img,
             Texture.TextureType.texture_rectangle)

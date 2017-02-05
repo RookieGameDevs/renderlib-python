@@ -1,9 +1,9 @@
 .eggs/
+__pycache__/
 bin/
 build/
 dist/
 lib/
-renderlib.egg-info/
-renderlib/__pycache__/
 pip-selfcheck.json
 pyvenv.cfg
+renderlib.egg-info/
