@@ -1,0 +1,27 @@
+renderlib-python
+================
+
+Python wrappers for `renderlib` C library.
+
+
+# Installation
+
+The package requires that `renderlib` and `matlib` libraries and headers are
+installed somewhere in the system so that during installation it could compile
+and link against them.
+
+If dependencies are installed in a standard path which is looked up by C
+compiler (`/usr/include` and `/usr/lib` respectively on UNIX systems, for
+example), it should suffice to do:
+
+    pip install renderlib
+
+Otherwise, compiler options must be passed as environment variables so that the
+wrapper builds and links properly, GCC/CLang example:
+
+    # Fish
+    env CFLAGS="-I/opt/renderlib/include/renderlib -I/opt/matlib/include" LDFLAGS="-L/opt/renderlib/lib -L/opt/matlib/lib" pip install renderlib
+
+    # Bash
+    CFLAGS="-I/opt/renderlib/include/renderlib -I/opt/matlib/include" LDFLAGS="-L/opt/renderlib/lib -L/opt/matlib/lib" pip install renderlib
+
