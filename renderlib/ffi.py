@@ -32,11 +32,11 @@ ffi.cdef(
 ffi.cdef(
     """
     struct Light {
-        struct Mat transform;
-        struct Vec direction;
-        struct Vec color;
+        Vec direction;
+        Vec color;
         float ambient_intensity;
         float diffuse_intensity;
+        ...;
     };
 
     struct Material {
@@ -47,24 +47,24 @@ ffi.cdef(
         float specular_power;
     };
 
-    struct MeshRenderProps {
-        struct Vec eye;
-        struct Mat model, view, projection;
+    struct Quad {
+        float width;
+        float height;
+    };
+
+    struct MeshProps {
         int cast_shadows;
         int receive_shadows;
-        struct Light *light;
         struct AnimationInstance *animation;
         struct Material *material;
     };
 
-    struct TextRenderProps {
-        Mat model, view, projection;
+    struct TextProps {
         Vec color;
         float opacity;
     };
 
-    struct QuadRenderProps {
-        Mat model, view, projection;
+    struct QuadProps {
         Vec color;
         struct Texture *texture;
         struct {
@@ -85,15 +85,6 @@ ffi.cdef(
 
     void
     renderer_shutdown(void);
-
-    int
-    render_mesh(struct Mesh *mesh, struct MeshRenderProps *props);
-
-    int
-    render_text(struct Text *text, struct TextRenderProps *props);
-
-    int
-    render_quad(float w, float h, struct QuadRenderProps *props);
     """)
 
 # Error API
@@ -229,4 +220,72 @@ ffi.cdef(
 
     void
     text_free(struct Text *text);
+    """)
+
+# Camera API
+ffi.cdef(
+    """
+    struct Camera {
+        Vec position;
+        Mat view;
+        Mat projection;
+        ...;
+    };
+
+    void
+    camera_init_perspective(
+        struct Camera *camera,
+        float fovy,
+        float aspect,
+        float near,
+        float far
+    );
+
+    void
+    camera_init_orthographic(
+        struct Camera *camera,
+        float left,
+        float right,
+        float top,
+        float bottom,
+        float near,
+        float far
+    );
+    """
+)
+
+# Scene API
+ffi.cdef(
+    """
+    struct Scene;
+
+    struct Object {
+        Vec position;
+        Qtr rotation;
+        Vec scale;
+    };
+
+    struct Scene*
+    scene_new(void);
+
+    struct Object*
+    scene_add_mesh(struct Scene *scene, struct Mesh *mesh, struct MeshProps *props);
+
+    struct Object*
+    scene_add_text(struct Scene *scene, struct Text *text, struct TextProps *props);
+
+    struct Object*
+    scene_add_quad(struct Scene *scene, struct Quad *quad, struct QuadProps *props);
+
+    void
+    scene_remove_object(struct Scene *scene, struct Object *object);
+
+    size_t
+    scene_object_count(struct Scene *scene);
+
+    int
+    scene_render(struct Scene *scene, struct Camera *camera, struct Light *light);
+
+    void
+    scene_free(struct Scene *scene);
     """)

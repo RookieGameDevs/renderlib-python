@@ -1,25 +1,25 @@
-from matlib.mat import Mat
 from matlib.vec import Vec
 from renderlib.animation import AnimationInstance
-from renderlib.core import Light
-from renderlib.core import Material
-from renderlib.core import MeshRenderProps
-from renderlib.core import TextRenderProps
-from renderlib.core import QuadRenderProps
-from renderlib.core import render_mesh
-from renderlib.core import render_text
-from renderlib.core import render_quad
+from renderlib.camera import OrthographicCamera
+from renderlib.camera import PerspectiveCamera
 from renderlib.core import renderer_init
 from renderlib.core import renderer_present
 from renderlib.core import renderer_shutdown
 from renderlib.error import error_print_traceback
 from renderlib.font import Font
 from renderlib.image import Image
+from renderlib.light import Light
+from renderlib.material import Material
 from renderlib.mesh import Mesh
+from renderlib.mesh import MeshProps
+from renderlib.quad import Quad
+from renderlib.quad import QuadProps
+from renderlib.scene import Scene
 from renderlib.text import Text
+from renderlib.text import TextProps
 from renderlib.texture import Texture
-from sdl2 import *
 from time import time
+import sdl2 as sdl
 
 #: Stats update interval in seconds
 UPDATE_INTERVAL = 2.0
@@ -30,27 +30,27 @@ class Demo:
         self.win = self.ctx = None
 
         # create a SDL window
-        self.win = SDL_CreateWindow(
+        self.win = sdl.SDL_CreateWindow(
             b'Demo',
-            SDL_WINDOWPOS_CENTERED,
-            SDL_WINDOWPOS_CENTERED,
+            sdl.SDL_WINDOWPOS_CENTERED,
+            sdl.SDL_WINDOWPOS_CENTERED,
             width,
             height,
-            SDL_WINDOW_OPENGL)
+            sdl.SDL_WINDOW_OPENGL)
         if self.win is None:
             raise RuntimeError('failed to create SDL window')
 
         # create an OpenGL context
-        SDL_GL_SetAttribute(
-            SDL_GL_CONTEXT_PROFILE_MASK,
-            SDL_GL_CONTEXT_PROFILE_CORE)
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3)
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3)
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
-        self.ctx = SDL_GL_CreateContext(self.win)
+        sdl.SDL_GL_SetAttribute(
+            sdl.SDL_GL_CONTEXT_PROFILE_MASK,
+            sdl.SDL_GL_CONTEXT_PROFILE_CORE)
+        sdl.SDL_GL_SetAttribute(sdl.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
+        sdl.SDL_GL_SetAttribute(sdl.SDL_GL_CONTEXT_MINOR_VERSION, 3)
+        sdl.SDL_GL_SetAttribute(sdl.SDL_GL_DOUBLEBUFFER, 1)
+        sdl.SDL_GL_SetAttribute(sdl.SDL_GL_DEPTH_SIZE, 24)
+        self.ctx = sdl.SDL_GL_CreateContext(self.win)
 
-        SDL_GL_SetSwapInterval(0)
+        sdl.SDL_GL_SetSwapInterval(0)
 
         if self.ctx is None:
             raise RuntimeError('failed to initialize OpenGL context')
@@ -65,29 +65,27 @@ class Demo:
         # initialize controls
         self.play_animation = False
 
-        # initialize UI projection matrix
-        self.ui_projection = Mat()
-        self.ui_projection.ortho(
+        # initialize UI camera and scene
+        self.ui_camera = OrthographicCamera(
             -self.width / 2,
             +self.width / 2,
             +self.height / 2,
             -self.height / 2,
             0,
             1)
+        self.ui_scene = Scene()
 
-        # initialize camera
-        self.camera_eye = Vec(5, 5, 5, 0)
-        self.camera_projection = Mat()
-        self.camera_projection.persp(
+        # initialize main camera and scene
+        self.camera = PerspectiveCamera(
             30.0,
             self.aspect,
             1,
-            100)
-        self.camera_view = Mat()
-        self.camera_view.lookatv(
-            self.camera_eye,
+            50)
+        self.camera.view.lookatv(
+            Vec(5, 5, 5),
             Vec(0, 0, 0),
             Vec(0, 1, 0))
+        self.scene = Scene()
 
         # initialize light
         self.light = Light()
@@ -97,47 +95,31 @@ class Demo:
         self.light.ambient_intensity = 0.3
         self.light.diffuse_intensity = 1.0
 
-        proj = Mat()
-        proj.ortho(
-            -5,
-            +5,
-            +5 * self.aspect,
-            -5 * self.aspect,
-            0,
-            10)
-
-        view = Mat()
-        view.lookat(
-            0, 5, 5,
-            0, 0, 0,
-            0, 1, 0)
-
-        self.light.transform = proj * view
-
         self.load_resources()
+        self.setup_scene()
 
     def __del__(self):
         renderer_shutdown()
-        SDL_GL_DeleteContext(self.ctx)
-        SDL_DestroyWindow(self.win)
-        SDL_Quit()
+        sdl.SDL_GL_DeleteContext(self.ctx)
+        sdl.SDL_DestroyWindow(self.win)
+        sdl.SDL_Quit()
 
     def load_resources(self):
         self.mesh = Mesh.from_file('tests/data/zombie.mesh')
         self.animation = AnimationInstance(self.mesh.animations[0])
         self.image = Image.from_file('tests/data/zombie.jpg')
-        self.texture = Texture.from_image(
-            self.image, Texture.TextureType.texture_2d)
+        self.texture = Texture.from_image(self.image, Texture.TextureType.texture_2d)
+
         self.terrain_mesh = Mesh.from_file('tests/data/plane.mesh')
         self.grass_img = Image.from_file('tests/data/grass.jpg')
-        self.terrain_texture = Texture.from_image(
-            self.grass_img, Texture.TextureType.texture_2d)
+        self.terrain_texture = Texture.from_image(self.grass_img, Texture.TextureType.texture_2d)
+
         self.font = Font.from_file('tests/data/courier.ttf', 16)
-        self.fps_text = Text(self.font)
-        self.close_btn_img = Image.from_file('tests/data/close_btn.png')
-        self.close_btn_texture = Texture.from_image(
-            self.close_btn_img,
-            Texture.TextureType.texture_rectangle)
+        self.text = Text(self.font)
+
+        self.btn = Quad(38, 36)
+        self.btn_img = Image.from_file('tests/data/close_btn.png')
+        self.btn_texture = Texture.from_image(self.btn_img, Texture.TextureType.texture_rectangle)
 
         self.material = Material()
         self.material.texture = self.texture
@@ -149,17 +131,45 @@ class Demo:
         self.terrain_material.texture = self.terrain_texture
         self.terrain_material.receive_light = True
 
+    def setup_scene(self):
+        self.mesh_props = MeshProps()
+        self.mesh_props.cast_shadows = True
+        self.mesh_props.receive_shadows = True
+        self.mesh_props.animation = self.animation
+        self.mesh_props.material = self.material
+        self.scene.add_mesh(self.mesh, self.mesh_props)
+
+        self.terrain_props = MeshProps()
+        self.terrain_props.cast_shadows = False
+        self.terrain_props.receive_shadows = True
+        self.terrain_props.material = self.terrain_material
+        terrain_obj = self.scene.add_mesh(self.terrain_mesh, self.terrain_props)
+        terrain_obj.scale = Vec(2, 1, 2)
+
+        self.text_props = TextProps()
+        self.text_props.color = Vec(0.5, 1.0, 0.5, 1.0)
+        self.text_props.opacity = 1.0
+        text_obj = self.ui_scene.add_text(self.text, self.text_props)
+        text_obj.position.x = -self.width / 2 + 10
+        text_obj.position.y = self.height / 2 - 10
+
+        self.btn_props = QuadProps()
+        self.btn_props.texture = self.btn_texture
+        btn_obj = self.ui_scene.add_quad(self.btn, self.btn_props)
+        btn_obj.position.x = self.width / 2 - 40
+        btn_obj.position.y = self.height / 2 - 2
+
     def update(self, dt):
-        evt = SDL_Event()
-        while SDL_PollEvent(evt):
-            if evt.type == SDL_QUIT:
+        evt = sdl.SDL_Event()
+        while sdl.SDL_PollEvent(evt):
+            if evt.type == sdl.SDL_QUIT:
                 return False
-            elif evt.type == SDL_KEYUP:
-                if evt.key.keysym.sym == SDLK_ESCAPE:
+            elif evt.type == sdl.SDL_KEYUP:
+                if evt.key.keysym.sym == sdl.SDLK_ESCAPE:
                     return False
-                elif evt.key.keysym.sym == SDLK_SPACE:
+                elif evt.key.keysym.sym == sdl.SDLK_SPACE:
                     self.play_animation = not self.play_animation
-            elif evt.type == SDL_MOUSEBUTTONDOWN and \
+            elif evt.type == sdl.SDL_MOUSEBUTTONDOWN and \
                     evt.button.x >= self.width - 40 and \
                     evt.button.x <= self.width and \
                     evt.button.y >= 2 and \
@@ -172,50 +182,15 @@ class Demo:
         return True
 
     def update_stats(self, fps, render_time):
-        self.fps_text.string = 'FPS: {fps}, render time: {time:.2f}ms'.format(
+        self.text.string = 'FPS: {fps}, render time: {time:.2f}ms'.format(
             fps=int(fps),
             time=render_time * 1000)
 
     def render(self):
-        mesh_props = MeshRenderProps()
-        mesh_props.eye = self.camera_eye
-        mesh_props.model = self.mesh.transform
-        mesh_props.view = self.camera_view
-        mesh_props.projection = self.camera_projection
-        mesh_props.cast_shadows = True
-        mesh_props.receive_shadows = True
-        mesh_props.light = self.light
-        mesh_props.animation = self.animation
-        mesh_props.material = self.material
-        render_mesh(self.mesh, mesh_props)
-
-        terrain_props = MeshRenderProps()
-        terrain_props.eye = self.camera_eye
-        terrain_props.model = self.terrain_mesh.transform
-        terrain_props.view = self.camera_view
-        terrain_props.projection = self.camera_projection
-        terrain_props.cast_shadows = False
-        terrain_props.receive_shadows = True
-        terrain_props.light = self.light
-        terrain_props.material = self.terrain_material
-        terrain_props.model.scale(2, 2, 1)
-        render_mesh(self.terrain_mesh, terrain_props)
-
-        text_props = TextRenderProps()
-        text_props.color = Vec(0.5, 1.0, 0.5, 1.0)
-        text_props.projection = self.ui_projection
-        text_props.opacity = 1.0
-        text_props.model.translate(-self.width / 2 + 10, self.height / 2 - 10, 0)
-        render_text(self.fps_text, text_props)
-
-        close_btn_props = QuadRenderProps()
-        close_btn_props.projection = self.ui_projection
-        close_btn_props.texture = self.close_btn_texture
-        close_btn_props.model.translate(self.width / 2 - 40, self.height / 2 - 2, 0)
-        render_quad(self.close_btn_img.width, self.close_btn_img.height, close_btn_props)
-
+        self.scene.render(self.camera, self.light)
+        self.ui_scene.render(self.ui_camera, None)
         renderer_present()
-        SDL_GL_SwapWindow(self.win)
+        sdl.SDL_GL_SwapWindow(self.win)
 
     def run(self):
         fps = render_time = time_acc = 0

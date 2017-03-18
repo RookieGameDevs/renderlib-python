@@ -4,6 +4,7 @@ from _renderlib import lib
 from renderlib.animation import Animation
 from matlib.mat import Mat
 
+
 class Mesh:
     def __init__(self, vertices=None, indices=None, normals=None, uvs=None,
             joint_ids=None, joint_weights=None, ptr=None):
@@ -85,3 +86,46 @@ class Mesh:
     @property
     def index_count(self):
         return self._ptr.index_count
+
+
+class MeshProps:
+    def __init__(self):
+        self._ptr = ffi.new('struct MeshProps*')
+        self._animation = None
+        self._material = None
+        self.cast_shadows = False
+        self.receive_shadows = True
+
+    @property
+    def cast_shadows(self):
+        return bool(self._ptr.cast_shadows)
+
+    @cast_shadows.setter
+    def cast_shadows(self, flag):
+        self._ptr.cast_shadows = int(bool(flag))
+
+    @property
+    def receive_shadows(self):
+        return bool(self._ptr.receive_shadows)
+
+    @receive_shadows.setter
+    def receive_shadows(self, flag):
+        self._ptr.receive_shadows = int(bool(flag))
+
+    @property
+    def animation(self):
+        return self._animation
+
+    @animation.setter
+    def animation(self, a):
+        self._animation = a
+        self._ptr.animation = a._ptr
+
+    @property
+    def material(self):
+        return self._material
+
+    @material.setter
+    def material(self, m):
+        self._material = m
+        self._ptr.material = m._ptr

@@ -1,4 +1,8 @@
+"""Text wrappers."""
+from _renderlib import ffi
 from _renderlib import lib
+from matlib.vec import Vec
+
 
 class Text:
     def __init__(self, font, string=''):
@@ -29,3 +33,27 @@ class Text:
     @property
     def height(self):
         return self._ptr.height
+
+
+class TextProps:
+    def __init__(self):
+        self._ptr = ffi.new('struct TextProps*')
+        self._color = Vec(ptr=ffi.addressof(self._ptr, 'color'))
+        self.color = Vec(1, 1, 1, 1)
+        self.opacity = 1.0
+
+    @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, c):
+        ffi.memmove(self._color._ptr, c._ptr, ffi.sizeof('Vec'))
+
+    @property
+    def opacity(self):
+        return self._ptr.opacity
+
+    @opacity.setter
+    def opacity(self, value):
+        self._ptr.opacity = value
