@@ -81,10 +81,8 @@ class Demo:
             self.aspect,
             1,
             50)
-        self.camera.view.lookatv(
-            Vec(5, 5, 5),
-            Vec(0, 0, 0),
-            Vec(0, 1, 0))
+        self.camera.position = Vec(5, 5, 5)
+        self.camera.look_at(Vec(0, 0, 0))
         self.scene = Scene()
 
         # initialize light

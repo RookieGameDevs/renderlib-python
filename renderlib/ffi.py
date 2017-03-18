@@ -227,6 +227,7 @@ ffi.cdef(
     """
     struct Camera {
         Vec position;
+        Qtr orientation;
         Mat view;
         Mat projection;
         ...;
@@ -251,6 +252,15 @@ ffi.cdef(
         float near,
         float far
     );
+
+    void
+    camera_set_position(struct Camera *camera, const Vec *pos);
+
+    void
+    camera_set_orientation(struct Camera *camera, const Qtr *rot);
+
+    void
+    camera_look_at(struct Camera *camera, const Vec *target);
     """
 )
 
