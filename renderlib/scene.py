@@ -6,8 +6,9 @@ from matlib.vec import Vec
 
 
 class Object:
-    def __init__(self, ptr):
+    def __init__(self, ptr, refs):
         self._ptr = ptr
+        self._refs = refs
         self._position = Vec(ptr=ffi.addressof(self._ptr, 'position'))
         self._rotation = Qtr(ptr=ffi.addressof(self._ptr, 'rotation'))
         self._scale = Vec(ptr=ffi.addressof(self._ptr, 'scale'))
@@ -46,13 +47,19 @@ class Scene:
         return lib.scene_object_count(self._ptr)
 
     def add_mesh(self, mesh, props):
-        return Object(lib.scene_add_mesh(self._ptr, mesh._ptr, props._ptr))
+        return Object(
+            lib.scene_add_mesh(self._ptr, mesh._ptr, props._ptr),
+            (mesh, props))
 
     def add_text(self, text, props):
-        return Object(lib.scene_add_text(self._ptr, text._ptr, props._ptr))
+        return Object(
+            lib.scene_add_text(self._ptr, text._ptr, props._ptr),
+            (text, props))
 
     def add_quad(self, quad, props):
-        return Object(lib.scene_add_quad(self._ptr, quad._ptr, props._ptr))
+        return Object(
+            lib.scene_add_quad(self._ptr, quad._ptr, props._ptr),
+            (quad, props))
 
     def remove_object(self, obj):
         lib.scene_remove_object(self._ptr, obj._ptr)
