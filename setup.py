@@ -2,11 +2,11 @@ from setuptools import setup
 
 setup(
     name='renderlib',
-    version='0.1.5',
+    version='0.1.6',
     packages=['renderlib'],
-    setup_requires=['cffi>=1.0.0', 'matlib>=0.1.5'],
+    setup_requires=['cffi>=1.0.0', 'matlib>=0.1.6'],
     cffi_modules=['build.py:ffi'],
-    install_requires=['cffi>=1.0.0', 'matlib>=0.1.5'],
+    install_requires=['cffi>=1.0.0', 'matlib>=0.1.6'],
 
     # metadata for PyPI
     author='Ivan Nikolaev',
