@@ -4,9 +4,9 @@ setup(
     name='renderlib',
     version='0.1.6',
     packages=['renderlib'],
-    setup_requires=['cffi>=1.0.0', 'matlib>=0.1.6'],
+    setup_requires=['cffi>=1.0.0', 'matlib>=0.1.7'],
     cffi_modules=['build.py:ffi'],
-    install_requires=['cffi>=1.0.0', 'matlib>=0.1.6'],
+    install_requires=['cffi>=1.0.0', 'matlib>=0.1.7'],
 
     # metadata for PyPI
     author='Ivan Nikolaev',
