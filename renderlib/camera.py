@@ -75,13 +75,17 @@ class Camera(ABC):
         :returns: Unprojected point in world coordinates.
         :rtype: :class:`matlib.Vec`
         """
+        view = Mat()
+        projection = Mat()
+        lib.camera_get_matrices(self._ptr, view._ptr, projection._ptr)
+
         x_ndc = 2.0 * vx / vw - 1.0
         y_ndc = 1.0 - (2.0 * vy) / vh
         z_ndc = 2 * vz - 1
         w_ndc = 1.0
         v_clip = Vec(x_ndc, y_ndc, z_ndc, w_ndc)
 
-        m = (self.projection * self.view).inverse()
+        m = (projection * view).inverse()
 
         out = m * v_clip
         out.w = 1.0 / out.w

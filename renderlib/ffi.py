@@ -251,6 +251,9 @@ ffi.cdef(
         float near,
         float far
     );
+
+    void
+    camera_get_matrices(struct Camera *camera, Mat *view, Mat *projection);
     """
 )
 
