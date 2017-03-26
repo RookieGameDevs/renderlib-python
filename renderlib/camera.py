@@ -3,7 +3,6 @@ from _renderlib import ffi
 from _renderlib import lib
 from abc import ABC
 from matlib.mat import Mat
-from matlib.qtr import Qtr
 from matlib.vec import Vec
 
 
@@ -11,7 +10,6 @@ class Camera(ABC):
     def __init__(self):
         self._ptr = ffi.new('struct Camera*')
         self._position = Vec(ptr=ffi.addressof(self._ptr, 'position'))
-        self._orientation = Qtr(ptr=ffi.addressof(self._ptr, 'orientation'))
         self._view = Mat(ptr=ffi.addressof(self._ptr, 'view'))
         self._view.ident()
         self._projection = Mat(ptr=ffi.addressof(self._ptr, 'projection'))
@@ -23,15 +21,7 @@ class Camera(ABC):
 
     @position.setter
     def position(self, p):
-        lib.camera_set_position(self._ptr, p._ptr)
-
-    @property
-    def orientation(self):
-        return self._orientation
-
-    @orientation.setter
-    def orientation(self, o):
-        lib.camera_set_orientation(self._ptr, o._ptr)
+        ffi.memmove(self._position._ptr, p._ptr, ffi.sizeof('Vec'))
 
     @property
     def view(self):
@@ -61,9 +51,8 @@ class Camera(ABC):
         :param up: Up vector.
         :type up: :class:`matlib.Vec`
         """
-        if up is None:
-            up = Vec(0, 1, 0)
-        lib.camera_look_at(self._ptr, eye._ptr, target._ptr, up._ptr)
+        self.view.ident()
+        self.view.lookatv(eye, target, up)
 
     def unproject(self, vx, vy, vz, vw, vh):
         """Unprojects a point in viewport coordinates into world coordinates.

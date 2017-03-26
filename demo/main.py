@@ -82,7 +82,7 @@ class Demo:
             1,
             50)
         self.camera.position = Vec(5, 5, 5)
-        self.camera.look_at(Vec(0, 0, 0))
+        self.camera.look_at(self.camera.position, Vec(0, 0, 0))
         self.scene = Scene()
 
         # initialize light
