@@ -49,13 +49,21 @@ class Camera(ABC):
     def projection(self, p):
         ffi.memmove(self._projection._ptr, p._ptr, ffi.sizeof('Mat'))
 
-    def look_at(self, target):
+    def look_at(self, eye, target, up=None):
         """Sets up camera look transformation.
+
+        :param eye: Eye position.
+        :type eye: :class:`matlib.Vec`
 
         :param target: Target point to look at.
         :type target: :class:`matlib.Vec`
+
+        :param up: Up vector.
+        :type up: :class:`matlib.Vec`
         """
-        lib.camera_look_at(self._ptr, target._ptr)
+        if up is None:
+            up = Vec(0, 1, 0)
+        lib.camera_look_at(self._ptr, eye._ptr, target._ptr, up._ptr)
 
     def unproject(self, vx, vy, vz, vw, vh):
         """Unprojects a point in viewport coordinates into world coordinates.
