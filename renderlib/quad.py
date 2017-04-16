@@ -57,12 +57,12 @@ class QuadProps:
             self._borders.right = value
 
         @property
-        def right(self):
-            return self._borders.right
+        def bottom(self):
+            return self._borders.bottom
 
-        @right.setter
-        def right(self, value):
-            self._borders.right = value
+        @bottom.setter
+        def bottom(self, value):
+            self._borders.bottom = value
 
     def __init__(self):
         self._ptr = ffi.new('struct QuadProps*')
