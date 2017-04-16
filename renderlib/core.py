@@ -1,5 +1,14 @@
 """Core API."""
 from _renderlib import lib
+from enum import IntEnum
+from enum import unique
+
+
+@unique
+class RenderTarget(IntEnum):
+
+    framebuffer = lib.RENDER_TARGET_FRAMEBUFFER
+    overlay = lib.RENDER_TARGET_OVERLAY
 
 
 def renderer_init():

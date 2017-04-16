@@ -71,5 +71,9 @@ class Scene:
     def remove_object(self, obj):
         lib.scene_remove_object(self._ptr, obj._ptr)
 
-    def render(self, camera, light=None):
-        lib.scene_render(self._ptr, camera._ptr, light._ptr if light else ffi.NULL)
+    def render(self, render_target, camera, light=None):
+        lib.scene_render(
+            self._ptr,
+            render_target.value,
+            camera._ptr,
+            light._ptr if light else ffi.NULL)

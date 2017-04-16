@@ -74,6 +74,12 @@ ffi.cdef(
         float opacity;
     };
 
+    enum {
+        RENDER_TARGET_FRAMEBUFFER,
+        RENDER_TARGET_OVERLAY,
+        ...
+    };
+
     int
     renderer_init(void);
 
@@ -287,7 +293,7 @@ ffi.cdef(
     scene_object_count(struct Scene *scene);
 
     int
-    scene_render(struct Scene *scene, struct Camera *camera, struct Light *light);
+    scene_render(struct Scene *scene, int render_target, struct Camera *camera, struct Light *light);
 
     void
     scene_free(struct Scene *scene);
