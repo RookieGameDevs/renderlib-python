@@ -28,49 +28,53 @@ class Quad:
 
 class QuadProps:
     class Borders:
-        def __init__(self, container):
-            self._borders = container._ptr.borders
+        def __init__(self, ptr):
+            self._ptr = ptr
             self.left = self.right = self.top = self.bottom = 0
 
         @property
         def left(self):
-            return self._borders.left
+            return self._ptr.left
 
         @left.setter
         def left(self, value):
-            self._borders.left = value
+            self._ptr.left = value
 
         @property
         def top(self):
-            return self._borders.top
+            return self._ptr.top
 
         @top.setter
         def top(self, value):
-            self._borders.top = value
+            self._ptr.top = value
 
         @property
         def right(self):
-            return self._borders.right
+            return self._ptr.right
 
         @right.setter
         def right(self, value):
-            self._borders.right = value
+            self._ptr.right = value
 
         @property
         def bottom(self):
-            return self._borders.bottom
+            return self._ptr.bottom
 
         @bottom.setter
         def bottom(self, value):
-            self._borders.bottom = value
+            self._ptr.bottom = value
 
     def __init__(self):
         self._ptr = ffi.new('struct QuadProps*')
         self._color = Vec(ptr=ffi.addressof(self._ptr, 'color'))
         self._texture = None
-        self.borders = QuadProps.Borders(self)
+        self._borders = QuadProps.Borders(ffi.addressof(self._ptr, 'borders'))
         self.color = Vec(1, 1, 1, 1)
         self.opacity = 1.0
+
+    @property
+    def borders(self):
+        return self._borders
 
     @property
     def color(self):
