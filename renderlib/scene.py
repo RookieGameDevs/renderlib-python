@@ -38,6 +38,14 @@ class Object:
     def scale(self, s):
         ffi.memmove(self._scale._ptr, s._ptr, ffi.sizeof('Vec'))
 
+    @property
+    def visible(self):
+        return self._ptr.visible
+
+    @visible.setter
+    def visible(self, v):
+        self._ptr.visible = v
+
     def remove(self):
         self._scene.remove_object(self)
 

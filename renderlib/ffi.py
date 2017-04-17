@@ -272,6 +272,7 @@ ffi.cdef(
         Vec position;
         Qtr rotation;
         Vec scale;
+        int visible;
     };
 
     struct Scene*
